@@ -1,46 +1,101 @@
-import { RecoilRoot, useRecoilValue, useSetRecoilState , atom } from "recoil";
-import React from "react";
+// src/App.jsx
+import { RecoilRoot, useRecoilValue, useSetRecoilState, atom } from "recoil";
+import React, { useState } from "react";
 
-const countAtom = atom({
-  key: "count",
-  default: 0,
+const todosAtom = atom({
+  key: "todos",
+  default: [],
 });
 
-const IsEven = atom({
-  key : "IsEven",
+// Filter selector (optional, showing completed todos as an example)
+const filterTodoSelector = atom({
+  key: "filterTodo",
   get : ({get})=>{
-    return get(countAtom)%2;
+    const todo = get(todosAtom);
+    
   }
-})
+});
 
 function App() {
-   return (
-      <>
+  return (
+    <RecoilRoot>
       <div>
-        <h1>Aur bhai kaise ho</h1>
+        <h1>Todo App</h1>
+        <AddTodo />
+        <FilterTodo />
       </div>
-      <RecoilRoot>
-        <Counter/>
-      </RecoilRoot>
-      </>
-   );
+    </RecoilRoot>
+  );
 }
 
-function Counter(){
-  const setCounter = useSetRecoilState(countAtom);
+function AddTodo() {
+  const setTodos = useSetRecoilState(todosAtom);
+  const [todo, setTodo] = useState("");
+
   return (
     <div>
-      <button onClick={()=>setCounter(prev=>parseInt(prev)+1)}>Increment</button>
-      <DisplayCount/>
+      <input
+        type="text"
+        value={todo}
+        onChange={(e) => setTodo(e.target.value)}
+        placeholder="Enter a todo"
+      />
+      <button
+        onClick={() => {
+          if (todo.trim()) {
+            const newTodo = {
+              text: todo,
+              isDone: false,
+            };
+            setTodos((prev) => [...prev, newTodo]);
+            setTodo("");
+          }
+        }}
+      >
+        Add Todo
+      </button>
     </div>
   );
 }
- 
-function DisplayCount(){
-  const Counter = useRecoilValue(countAtom);
+
+function FilterTodo() {
+  const todos = useRecoilValue(todosAtom);
+  const setTodos = useSetRecoilState(todosAtom);
+
   return (
     <div>
-      {Counter}
+      {todos.length === 0 ? (
+        <p>No todos yet!</p>
+      ) : (
+        <table>
+          <thead>
+            <tr>
+              <th>Todo</th>
+              <th>Mark</th>
+            </tr>
+          </thead>
+          <tbody>
+            {todos.map((todo, index) => (
+              <tr key={index}>
+                <td>{todo.text}</td>
+                <td>
+                  <input
+                    type="checkbox"
+                    checked={todo.isDone}
+                    onChange={() => {
+                      setTodos((prev) =>
+                        prev.map((item, i) =>
+                          i === index ? { ...item, isDone: !item.isDone } : item
+                        )
+                      );
+                    }}
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }
