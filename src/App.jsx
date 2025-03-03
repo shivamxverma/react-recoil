@@ -1,19 +1,32 @@
 // src/App.jsx
-import { RecoilRoot, useRecoilValue, useSetRecoilState, atom } from "recoil";
-import React, { useState } from "react";
+import { RecoilRoot, useRecoilValue, useSetRecoilState,useRecoilState, atom } from "recoil";
+import React from "react";
+
+
+const task = atom({
+  key : "task",
+  default : ""
+})
 
 const todosAtom = atom({
   key: "todos",
   default: [],
 });
 
-// Filter selector (optional, showing completed todos as an example)
 const filterTodoSelector = atom({
   key: "filterTodo",
   get : ({get})=>{
-    const todo = get(todosAtom);
-    
-  }
+    const filter = get(task);
+    const list = get(todosAtom);
+
+    switch (filter) {
+      case 'Show Completed':
+        return list.filter((item) => item.isComplete);
+      case 'Show Uncompleted':
+        return list.filter((item) => !item.isComplete);
+      default:
+        return list;
+  }}
 });
 
 function App() {
@@ -30,7 +43,7 @@ function App() {
 
 function AddTodo() {
   const setTodos = useSetRecoilState(todosAtom);
-  const [todo, setTodo] = useState("");
+  const [todo, setTodo] = useRecoilState(task);
 
   return (
     <div>
@@ -61,6 +74,8 @@ function AddTodo() {
 function FilterTodo() {
   const todos = useRecoilValue(todosAtom);
   const setTodos = useSetRecoilState(todosAtom);
+  const filter = useSetRecoilState(filterTodoSelector);
+  console.log(filter);
 
   return (
     <div>
