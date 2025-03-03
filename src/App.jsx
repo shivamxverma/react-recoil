@@ -6,6 +6,13 @@ const countAtom = atom({
   default: 0,
 });
 
+const IsEven = atom({
+  key : "IsEven",
+  get : ({get})=>{
+    return get(countAtom)%2;
+  }
+})
+
 function App() {
    return (
       <>
